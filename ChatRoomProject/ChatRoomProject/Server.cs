@@ -1,11 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
@@ -17,16 +12,17 @@ namespace ChatRoomProject
     {
         string strMsgReceive;
         Queue<string> message = new Queue<string>();
+        Thread thread = null;
+        Socket socket = null;
+        Dictionary<string, Socket> dict = new Dictionary<string, Socket>();
+        Dictionary<string, Thread> dictThread = new Dictionary<string, Thread>();
 
         public Server()
         {
             InitializeComponent();
             TextBox.CheckForIllegalCrossThreadCalls = false;
         }
-        Thread thread = null;
-        Socket socket = null;
-        Dictionary<string, Socket> dict = new Dictionary<string, Socket>();
-        Dictionary<string, Thread> dictThread = new Dictionary<string, Thread>();
+
         private void btnLogOn_Click(object sender, EventArgs e)
         {
             socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -46,24 +42,6 @@ namespace ChatRoomProject
             thread.IsBackground = true;
             thread.Start();
             ShowMessage("Server Is On");
-        }
-        private void btnSend_Click(object sender, EventArgs e)
-        {
-            string stringMessage = txtMessage.Text.Trim();
-            byte[] arrayMessage = Encoding.UTF8.GetBytes(string.Format($"\n Admin Said: {stringMessage}"));
-            foreach (Socket s in dict.Values)
-            {
-                try
-                {
-                    s.Send(arrayMessage);
-                    this.txtMessage.Clear();
-                }
-                catch (SocketException)
-                {
-                    ShowMessage("Message Didn't Send");
-                    break;
-                }
-            }
         }
 
         private void WatchConnection()
@@ -87,6 +65,43 @@ namespace ChatRoomProject
                 threadCommunicate.Start(socketConnection);
                 dictThread.Add(socketConnection.RemoteEndPoint.ToString(), threadCommunicate);
                 ShowMessage(string.Format("\n {0} Have Join. ", socketConnection.RemoteEndPoint.ToString()));
+            }
+        }
+
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            string stringMessage = txtMessage.Text.Trim();
+            byte[] arrayMessage = Encoding.UTF8.GetBytes(string.Format($"\n Admin Said: {stringMessage}"));
+            foreach (Socket s in dict.Values)
+            {
+                try
+                {
+                    s.Send(arrayMessage);
+                    this.txtMessage.Clear();
+                }
+                catch (SocketException)
+                {
+                    ShowMessage("Message Didn't Send");
+                    break;
+                }
+            }
+        }
+
+        private void SendMessageToAll()
+        {
+            string stringMessage = message.Dequeue();
+            byte[] arrayMessage = Encoding.UTF8.GetBytes(string.Format(stringMessage));
+            foreach (Socket s in dict.Values)
+            {
+                try
+                {
+                    s.Send(arrayMessage);
+                }
+                catch (SocketException)
+                {
+                    ShowMessage("Message Didn't Send");
+                    break;
+                }
             }
         }
 
@@ -115,24 +130,6 @@ namespace ChatRoomProject
                     ShowMessage(string.Format("\n" + strMsgReceive));
                     message.Enqueue(strMsgReceive);
                     SendMessageToAll();
-                }
-            }
-        }
-
-        private void SendMessageToAll()
-        {
-            string stringMessage = message.Dequeue();
-            byte[] arrayMessage = Encoding.UTF8.GetBytes(string.Format(stringMessage));
-            foreach (Socket s in dict.Values)
-            {
-                try
-                {
-                    s.Send(arrayMessage);
-                }
-                catch (SocketException)
-                {
-                    ShowMessage("Message Didn't Send");
-                    break;
                 }
             }
         }
