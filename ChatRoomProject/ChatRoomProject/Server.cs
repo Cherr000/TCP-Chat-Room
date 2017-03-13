@@ -38,13 +38,13 @@ namespace ChatRoomProject
                 return;
             }
             socket.Listen(10);
-            thread = new Thread(WatchConnection);
+            thread = new Thread(Connection);
             thread.IsBackground = true;
             thread.Start();
             ShowMessage("Server Is On");
         }
 
-        private void WatchConnection()
+        private void Connection()
         {
             while (true)
             {
