@@ -95,7 +95,7 @@ namespace ChatRoomProject
             Socket socketClient = socketClientParameter as Socket;
             while (true)
             {
-                byte[] arrayMessageReceive = new byte[1024 * 1024 * 2];
+                byte[] arrayMessageReceive = new byte[1024];
                 int length = -1;
                 try
                 {
@@ -139,7 +139,7 @@ namespace ChatRoomProject
 
         private void ShowMessage(string message)
         {
-            DisplayMessage.AppendText(message + "\r\n");
+            DisplayMessage.AppendText(message);
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)

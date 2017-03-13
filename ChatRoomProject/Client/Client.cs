@@ -64,14 +64,14 @@ namespace Client
 
         private void ShowMessage(string message)
         {
-            DisplayMessage.AppendText(message + "\r\n");
+            DisplayMessage.AppendText(message);
         }
         
         private void ReceiveMessage()
         {
             while (true)
             {
-                byte[] arrayMessageReceive = new byte[1024 * 1024 * 2];
+                byte[] arrayMessageReceive = new byte[1024];
                 int length = -1;
                 try
                 {
